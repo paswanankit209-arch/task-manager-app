@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taskflow — Advanced Task & Productivity Manager | Ankit Paswan</title>
+  <meta name="description" content="A lightweight, responsive task manager with local storage persistence, priority categorization, dynamic completion metrics, and keyboard shortcuts.">
+  <link rel="icon" type="image/svg+xml" href="../../assets/images/favicon.svg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header & Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="header-left">
+        <a href="../../index.html#projects" class="back-link" title="Return to Portfolio">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+          <span>Portfolio</span>
+        </a>
+        <div class="header-divider"></div>
+        <div class="app-brand">
+          <span class="brand-monogram">TF</span>
+          <div>
+            <h1 class="brand-title">Taskflow</h1>
+            <span class="brand-subtitle">Project 02 · Productivity Engine</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <div class="storage-badge" title="Data saved locally in browser">
+          <span class="pulse-dot"></span>
+          <span>Local Storage Active</span>
+        </div>
+        <button id="theme-toggle" class="icon-btn" aria-label="Toggle theme" title="Switch Light/Dark Theme">
+          <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Scroll Progress Indicator -->
+    <div class="scroll-progress-track" aria-hidden="true">
+      <div class="scroll-progress-bar" id="scroll-progress-bar"></div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-container">
+    <!-- Metrics Bar -->
+    <section class="metrics-grid" aria-label="Productivity Metrics">
+      <div class="metric-card">
+        <div class="metric-info">
+          <span class="metric-label">Total Tasks</span>
+          <span class="metric-val" id="metric-total">0</span>
+        </div>
+        <div class="metric-icon total-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <span class="metric-label">Pending</span>
+          <span class="metric-val" id="metric-pending">0</span>
+        </div>
+        <div class="metric-icon pending-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-info">
+          <span class="metric-label">Completed</span>
+          <span class="metric-val" id="metric-completed">0</span>
+        </div>
+        <div class="metric-icon completed-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card progress-metric-card">
+        <div class="progress-header">
+          <span class="metric-label">Progress Rate</span>
+          <span class="metric-val progress-percentage" id="metric-rate">0%</span>
+        </div>
+        <div class="progress-track" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progress-bar-container">
+          <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Create Task Section -->
+    <section class="task-form-section">
+      <form id="task-form" class="task-form" novalidate>
+        <div class="form-row-main">
+          <div class="input-with-icon">
+            <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="16"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
+            <input type="text" id="task-title-input" class="text-input" placeholder="What needs to be accomplished? (e.g. Implement Binary Search Tree)" required minlength="2" autocomplete="off">
+          </div>
+          <button type="submit" class="btn btn-primary" id="add-task-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+            <span>Add Task</span>
+          </button>
+        </div>
+
+        <!-- Optional Task Meta Controls -->
+        <div class="form-row-meta">
+          <div class="meta-field">
+            <label for="task-category-select">Category</label>
+            <select id="task-category-select" class="select-input">
+              <option value="Study">📚 Study / CS</option>
+              <option value="Coding">💻 Coding</option>
+              <option value="Project">🚀 Project</option>
+              <option value="Personal">🌟 Personal</option>
+            </select>
+          </div>
+
+          <div class="meta-field">
+            <label for="task-priority-select">Priority</label>
+            <select id="task-priority-select" class="select-input">
+              <option value="Medium">⚡ Medium</option>
+              <option value="High">🔥 High Priority</option>
+              <option value="Low">🌱 Low Priority</option>
+            </select>
+          </div>
+
+          <div class="meta-field">
+            <label for="task-due-date">Due Date</label>
+            <input type="date" id="task-due-date" class="date-input">
+          </div>
+
+          <div class="meta-field optional-desc">
+            <label for="task-desc-input">Note (Optional)</label>
+            <input type="text" id="task-desc-input" class="text-input-sm" placeholder="Brief notes, link, or criteria">
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- Toolbar: Search, Filters & Actions -->
+    <section class="toolbar-section">
+      <div class="toolbar-left">
+        <!-- Search bar -->
+        <div class="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" id="search-input" placeholder="Search tasks..." aria-label="Search tasks">
+          <button type="button" id="clear-search-btn" class="clear-btn" style="display: none;" title="Clear search">✕</button>
+        </div>
+
+        <!-- Filter tabs -->
+        <div class="filter-tabs" role="tablist">
+          <button type="button" class="tab-btn active" data-filter="all">All</button>
+          <button type="button" class="tab-btn" data-filter="pending">Pending</button>
+          <button type="button" class="tab-btn" data-filter="completed">Completed</button>
+        </div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Category filter -->
+        <select id="filter-category" class="filter-dropdown" aria-label="Filter by category">
+          <option value="all">All Categories</option>
+          <option value="Study">Study / CS</option>
+          <option value="Coding">Coding</option>
+          <option value="Project">Project</option>
+          <option value="Personal">Personal</option>
+        </select>
+
+        <!-- Sort dropdown -->
+        <select id="sort-select" class="filter-dropdown" aria-label="Sort tasks">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="priority">Priority (High to Low)</option>
+          <option value="due">Due Date</option>
+        </select>
+
+        <!-- Utility Menu Dropdown -->
+        <div class="action-dropdown-wrapper">
+          <button type="button" id="options-btn" class="btn btn-secondary btn-icon-only" title="Task Actions">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+          </button>
+          <div class="dropdown-menu" id="options-menu">
+            <button type="button" id="btn-export-tasks">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+              Export JSON
+            </button>
+            <label class="dropdown-file-label">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+              Import JSON
+              <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </label>
+            <button type="button" id="btn-clear-completed" class="text-danger">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              Clear Completed
+            </button>
+            <button type="button" id="btn-reset-demo">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+              Load Sample Tasks
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Task List Container -->
+    <section class="task-list-section" aria-label="Task List">
+      <div id="task-list" class="task-list">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <div class="empty-icon-wrap">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="m9 15 2 2 4-4"/></svg>
+        </div>
+        <h3 class="empty-title">No tasks found</h3>
+        <p class="empty-desc">Create your first task above or change your active filters.</p>
+        <button type="button" class="btn btn-secondary btn-sm" id="empty-reset-btn">Load Recommended Tasks</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Edit Task Modal -->
+  <dialog id="edit-task-dialog" class="dialog-modal">
+    <form id="edit-task-form" method="dialog" class="dialog-form">
+      <div class="dialog-header">
+        <h3 class="dialog-title">Edit Task</h3>
+        <button type="button" class="icon-btn-sm" id="close-dialog-btn" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="dialog-body">
+        <input type="hidden" id="edit-task-id">
+        <div class="form-group">
+          <label for="edit-task-title">Task Title</label>
+          <input type="text" id="edit-task-title" class="text-input" required minlength="2">
+        </div>
+        <div class="form-row-dual">
+          <div class="form-group">
+            <label for="edit-task-category">Category</label>
+            <select id="edit-task-category" class="select-input">
+              <option value="Study">Study / CS</option>
+              <option value="Coding">Coding</option>
+              <option value="Project">Project</option>
+              <option value="Personal">Personal</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-task-priority">Priority</label>
+            <select id="edit-task-priority" class="select-input">
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="edit-task-due">Due Date</label>
+          <input type="date" id="edit-task-due" class="date-input">
+        </div>
+        <div class="form-group">
+          <label for="edit-task-desc">Description / Notes</label>
+          <textarea id="edit-task-desc" class="textarea-input" rows="3"></textarea>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button type="button" class="btn btn-secondary" id="cancel-edit-btn">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="save-edit-btn">Save Changes</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="status" aria-live="polite">
+    <span id="toast-message">Task updated</span>
+  </div>
+
+  <!-- Floating Back to Top Button -->
+  <button type="button" id="back-to-top-btn" class="back-to-top-floating" aria-label="Scroll back to top" title="Scroll to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
